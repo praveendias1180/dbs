@@ -6,8 +6,8 @@ echo "executing command " $cmd_no
 
 localdb="cwilsontest"
 
-remoteconf="./cw1180.conf"
-localconf="./defaults.conf"
+remoteconf="./remote.conf"
+localconf="./local.conf"
 
 case $cmd_no in
 
@@ -28,6 +28,7 @@ case $cmd_no in
         ;;
 
     32) # Show char
+        mysql --defaults-file=$remoteconf -t -e "SHOW CHARACTER SET;"
         mysql --defaults-file=$remoteconf -t -e "SHOW VARIABLES LIKE '%char%';"
         mysql --defaults-file=$remoteconf -t -e "SHOW VARIABLES LIKE '%collation%';"
         ;;
@@ -40,7 +41,19 @@ case $cmd_no in
     41) # Export local tables EXCEPT
         read -p "Enter EXCEPT Table Name: " tbl_name
         mysqldump --defaults-file=$localconf $localdb --ignore-table=$localdb.$tbl_name > "except-"$tbl_name"-table.sql"
-        ;;    
+        ;;   
+
+    42) # Export local db
+        mysqldump --defaults-file=$localconf $localdb > $localdb"-all.sql"
+        mysqldump --defaults-file=$localconf $localdb | gzip > $localdb"-all-original.sql.gz"
+        ls -lht 
+        ;;      
+
+    43) # gzip Exported db
+        # https://www.gnu.org/software/gzip/manual/gzip.html
+        gzip -v -k $localdb"-all.sql"
+        ls -lht 
+        ;;       
 
     5) # Import to remote DB
         read -p "Enter Table Name: " tbl_name
